@@ -26,13 +26,14 @@ lookupenv env name =
             if first.name == name then
                 first.val
             else
+                lookupenv rest name
 
 interp e env = 
   case e of
     NumC num ->
       NumV num
     IdC id ->
-      lookup-env id env
+      lookupenv id env
     StringC str ->
       StringV str
     IfC test first second ->
@@ -54,11 +55,10 @@ interp e env =
       case fval of
         CloV params body cloEnv ->
           if (List.length params) == (List.length argVals) then
-            interp body (add-env params argVals cloEnv)
+            interp body (addenv params argVals cloEnv)
           else
             Err "DXUQ: expected " ++ (List.length params) ++ " arguments to function, given: " ++ (List.length argVals)
         PrimV proc ->
           proc argVals
         _ ->
           Err "DXUQ: " ++ fval ++ " cannot be used as a function"
-                lookupenv rest name 
