@@ -16,18 +16,6 @@ type Value
 type Environment = List Binding
 type alias Binding = { name : String, val : Value }
 
-lookupenv env name = 
-    case env of
-        [] ->
-            let errmsg = "Unbound identifier: "++name
-            in
-                Err errmsg
-        first :: rest ->
-            if first.name == name then
-                first.val
-            else
-                lookupenv rest name
-
 interp e env = 
   case e of
     NumC num ->
@@ -62,3 +50,118 @@ interp e env =
           proc argVals
         _ ->
           Err "DXUQ: " ++ fval ++ " cannot be used as a function"
+
+lookupenv env name = 
+    case env of
+        [] ->
+            let errmsg = "Unbound identifier: "++name
+            in
+                Err errmsg
+        first :: rest ->
+            if first.name == name then
+                first.val
+            else
+                lookupenv rest name
+
+addenv params argVals env =
+  case params of
+    [] ->
+      env
+    firstParam :: restParams ->
+      let
+        firstArgVals = List.head argVals
+        restArgVals = List.tail argVals
+      in
+      case restArgVals of
+        Nothing ->
+          []
+        Just restArgs ->
+          case firstArgVals of
+          Nothing ->
+            []
+          Just firstArg ->
+            addenv restParams restArgs ((Binding firstParam firstArg) :: env)
+
+add l r =
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln + rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+sub l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln - rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+mult l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln + rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+div l r =
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          if rn == 0 then
+            ErrV "DXUQ: divide by 0"
+          else
+            let
+                res = ln / rn
+            in
+                NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+leq l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          if ln <= rn then
+            BoolV True
+          else
+            BoolV False
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+constructtopenv = 
+  [Binding "+" (PrimV add),
+   Binding "-" (PrimV sub),
+   Binding "*" (PrimV mult),
+   Binding "/" (PrimV div),
+   Binding "<=" (PrimV leq),
+   Binding "equal?" (PrimV equal),
+   Binding "error" (PrimV error),
+   Binding "true" (BoolV True),
+   Binding "false" (BoolV False)]
