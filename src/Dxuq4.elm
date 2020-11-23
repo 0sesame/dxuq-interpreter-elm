@@ -62,3 +62,86 @@ interp e env =
           proc argVals
         _ ->
           Err "DXUQ: " ++ fval ++ " cannot be used as a function"
+
+
+
+
+
+add l r =
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln + rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+
+subtract l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln - rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+
+multiply l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          let
+            res = ln + rn
+          in
+            NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+
+div l r =
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          if rn == 0 then
+            ErrV "DXUQ: divide by 0"
+          else
+            let
+                res = ln / rn
+            in
+                NumV res
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+
+lt l r = 
+  case l of
+    NumC ln ->
+      case r of
+        NumC rn ->
+          if ln <= rn then
+            BoolV True
+          else
+            BoolV False
+        _ ->   
+          ErrV "DXUQ: r not numC"
+    _ -> 
+      ErrV "DXUQ: l not numC"
+
+--error primitive funciton, still working on
