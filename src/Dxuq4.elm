@@ -12,6 +12,7 @@ type Value
  | StringV String
  | CloV (List String) ExprC Environment
  | PrimV ((List Value) -> Value)
+ | ErrV String
 
 type Environment = List Binding
 type alias Binding = { name : String, val : Value }
@@ -165,3 +166,5 @@ constructtopenv =
    Binding "error" (PrimV error),
    Binding "true" (BoolV True),
    Binding "false" (BoolV False)]
+
+--error primitive funciton, still working on
