@@ -10,19 +10,23 @@ type Value
  = NumV Float
  | BoolV Bool
  | StringV String
- | CloV (List String) ExprC Environment
- | PrimV ((List Value) -> Value)
+ | CloV (List String) ExprC (List Binding)
+ | PrimV (Value -> Value -> Value)
  | ErrV String
 
 type Environment = List Binding
 type alias Binding = { name : String, val : Value }
 
+topInterp expr =
+  interp expr constructtopenv
+
+interp : ExprC -> List Binding -> Value
 interp e env = 
   case e of
     NumC num ->
       NumV num
     IdC id ->
-      lookupenv id env
+      lookupenv env id
     StringC str ->
       StringV str
     IfC test first second ->
@@ -33,7 +37,7 @@ interp e env =
         BoolV b -> 
           if b then (interp first env) else (interp second env)
         _ ->
-          Err "DXUQ: non-boolean test " ++ testBool ++ " used with if statement"
+          ErrV "DXUQ: non-boolean test used with if statement"
     LamC params body ->
       CloV params body env
     AppC f args ->
@@ -46,18 +50,27 @@ interp e env =
           if (List.length params) == (List.length argVals) then
             interp body (addenv params argVals cloEnv)
           else
-            Err "DXUQ: expected " ++ (List.length params) ++ " arguments to function, given: " ++ (List.length argVals)
+            ErrV "DXUQ: wrong number of arguments to function"
         PrimV proc ->
-          proc argVals
+          if not ((List.length argVals) == 2) then
+            ErrV "DXUQ: expected two arguments to primitive"
+          else
+            case argVals of
+              first :: second :: third ->
+                proc first second
+              [] ->
+                ErrV "DXUQ: incorrect number of arguments"
+              [_] ->
+                ErrV "DXUQ: incorrect number of arguments"
         _ ->
-          Err "DXUQ: " ++ fval ++ " cannot be used as a function"
+          ErrV "DXUQ: invalid function"
 
 lookupenv env name = 
     case env of
         [] ->
             let errmsg = "Unbound identifier: "++name
             in
-                Err errmsg
+                ErrV errmsg
         first :: rest ->
             if first.name == name then
                 first.val
@@ -85,9 +98,9 @@ addenv params argVals env =
 
 add l r =
   case l of
-    NumC ln ->
+    NumV ln ->
       case r of
-        NumC rn ->
+        NumV rn ->
           let
             res = ln + rn
           in
@@ -99,9 +112,9 @@ add l r =
 
 sub l r = 
   case l of
-    NumC ln ->
+    NumV ln ->
       case r of
-        NumC rn ->
+        NumV rn ->
           let
             res = ln - rn
           in
@@ -113,9 +126,9 @@ sub l r =
 
 mult l r = 
   case l of
-    NumC ln ->
+    NumV ln ->
       case r of
-        NumC rn ->
+        NumV rn ->
           let
             res = ln + rn
           in
@@ -127,9 +140,9 @@ mult l r =
 
 div l r =
   case l of
-    NumC ln ->
+    NumV ln ->
       case r of
-        NumC rn ->
+        NumV rn ->
           if rn == 0 then
             ErrV "DXUQ: divide by 0"
           else
@@ -144,9 +157,9 @@ div l r =
 
 leq l r = 
   case l of
-    NumC ln ->
+    NumV ln ->
       case r of
-        NumC rn ->
+        NumV rn ->
           if ln <= rn then
             BoolV True
           else
@@ -162,9 +175,7 @@ constructtopenv =
    Binding "*" (PrimV mult),
    Binding "/" (PrimV div),
    Binding "<=" (PrimV leq),
-   Binding "equal?" (PrimV equal),
-   Binding "error" (PrimV error),
+   -- Binding "equal?" (PrimV equal),
+   -- Binding "error" (PrimV error),
    Binding "true" (BoolV True),
    Binding "false" (BoolV False)]
-
---error primitive funciton, still working on
