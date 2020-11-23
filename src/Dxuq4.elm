@@ -19,7 +19,7 @@ type Environment = List Binding
 type alias Binding = { name : String, val : Value }
 
 topInterp expr =
-  interp expr constructtopenv
+  serialize (interp expr constructtopenv)
 
 interp : ExprC -> List Binding -> Value
 interp e env = 
@@ -65,6 +65,15 @@ interp e env =
                 ErrV "DXUQ: incorrect number of arguments"
         _ ->
           ErrV "DXUQ: invalid function"
+
+serialize value =
+  case value of
+    NumV n -> String.fromFloat n
+    BoolV b -> if b then "true" else "false"
+    StringV s -> s
+    CloV _ _ _ -> "#<procedure>"
+    PrimV _ -> "#<primop>"
+    ErrV str -> str
 
 lookupenv env name = 
     case env of
