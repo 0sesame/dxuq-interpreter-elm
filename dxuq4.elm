@@ -26,7 +26,6 @@ lookupenv env name =
             if first.name == name then
                 first.val
             else
-                lookupenv rest name 
 
 interp e env = 
   case e of
@@ -62,3 +61,4 @@ interp e env =
           proc argVals
         _ ->
           Err "DXUQ: " ++ fval ++ " cannot be used as a function"
+                lookupenv rest name 
