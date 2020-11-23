@@ -16,16 +16,17 @@ type Value
 type Environment = List Binding
 type alias Binding = { name : String, val : Value }
 
-lookup-env : Environment -> String -> Value
-lookup-env env name = 
+lookupenv env name = 
     case env of
         [] ->
-            Err "Unbound identifier: "++name
+            let errmsg = "Unbound identifier: "++name
+            in
+                Err errmsg
         first :: rest ->
             if first.name == name then
                 first.val
             else
-                lookup-env rest name
+                lookupenv rest name 
 
 interp e env = 
   case e of
